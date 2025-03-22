@@ -33,8 +33,13 @@
 - **TwoDown**: 검지와 중지만 내림 → `Yellow led Duration` **감소**
 - **FourUp**: 엄지 빼고 모두 핀 상태 → `Green led Duration` **증가**
 - **FourDown**: 엄지 빼고 모두 내린 상태 → `Green led Duration` **감소**
+  
 
+---
 
+**제스쳐 인식 방법을 각 손가락 끝점과 관절의 좌표를 계산하고, 좌표간의 거리(픽셀) 단위로 제스쳐를 구분하였습니다. Shaka, OK, OpenHand 제스쳐의 경우 화면(웹캠)과의 거리를 충분히 가깝게 하고, OneUp/Down, TwoUp/Down, FourUp/Down 제스쳐의 경우 화면과 충분한 거리를 유지한 채로 해야 인식이 정확하고 잘 됩니다. (유튜브 영상 참고)**
+
+---
 **이때 OneDown, TwoDown, FourDown과 같이 손가락을 내리는 제스쳐는 손등을 카메라를 보도록 향해야 함.**
 
 ---
