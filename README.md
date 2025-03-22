@@ -1,4 +1,9 @@
 ## **(확장)  임베디드 통신 시스템 Assignment 2 - Blink Control by Handshape**
+---
+
+**[Youtube link] : https://www.youtube.com/watch?v=EKPkY8SCQ0U**
+
+---
 
 ### 프로젝트 동작 목적
 
