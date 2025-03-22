@@ -25,6 +25,11 @@ void switch1_ISR();
 void switch2_ISR();
 void switch3_ISR();
 
+// ───────────────────────────────
+// 시리얼 통신 관련 함수 선언
+// ───────────────────────────────
+// sendStatusToWeb()와 serialReceive()는 시리얼 통신을 통해 외부와
+// 데이터를 주고받기 위한 핵심 함수입니다.
 void sendStatusToWeb();
 void serialReceive();
 
@@ -65,7 +70,7 @@ void setup() {
     attachPCINT(digitalPinToPCINT(switch2), switch2_ISR, FALLING);
     attachPCINT(digitalPinToPCINT(switch3), switch3_ISR, FALLING);
 
-    Serial.begin(9600);
+    Serial.begin(9600);  // 시리얼 통신 시작: 9600 bps
 
     tRed.setInterval(redDuration);
     tRed.enable();
@@ -73,12 +78,31 @@ void setup() {
 
 void loop() {
     ts.execute();
-    serialReceive();
+    serialReceive();  // 시리얼 데이터를 읽고 명령 처리
 }
 
+// ───────────────────────────────
+// 1. sendStatusToWeb():
+//    - 현재 모드, LED 상태, 밝기 정보를 문자열 형태로 구성하여
+//      시리얼 포트를 통해 전송합니다.
+//    - 전송 형식은 "MODE:모드, LED:상태, Brightness:값"입니다.
+//    - 이 정보를 웹 서버나 외부 시스템에서 읽어 현재 시스템의 상태를
+//      모니터링하거나 제어할 수 있습니다.
+// 
+// 2. serialReceive():
+//    - Serial.available()를 통해 수신 버퍼에 데이터가 있는지 확인합니다.
+//    - '\n' 문자가 나올 때까지 문자열을 읽어들여 한 줄의 명령으로 취급합니다.
+//    - 읽은 문자열의 앞뒤 공백을 제거한 후, 아래와 같이 처리합니다:
+//         * "RED:"로 시작하는 명령: 빨간 LED 지속 시간(redDuration)을 설정.
+//         * "YELLOW:"로 시작하는 명령: 노란 LED 지속 시간(yellowDuration)을 설정.
+//         * "GREEN:"로 시작하는 명령: 초록 LED 지속 시간(greenDuration)을 설정.
+//         * "BTN1", "BTN2", "BTN3": 해당 버튼 기능을 직접 실행(각 ISR 호출).
+//    - 이를 통해 외부에서 시리얼로 명령을 보내 시스템의 동작을 제어할 수 있습니다.
+// ───────────────────────────────
+
 void sendStatusToWeb() {
+    // 모드 정보 전송: 현재 모드에 따라 문자열 결정
     Serial.print("MODE:");
-    
     if (redMode) {
         Serial.print("Red Mode");
     } else if (blinkMode) {
@@ -89,8 +113,8 @@ void sendStatusToWeb() {
         Serial.print("NORMAL");
     }
 
+    // LED 상태 정보 전송
     Serial.print(", LED:");
-
     if (stateRed) {
         Serial.print("Red");
     } else if (stateYellow || stateYellow2) {
@@ -103,21 +127,26 @@ void sendStatusToWeb() {
         Serial.print("OFF");
     }
 
+    // 밝기 정보 전송 (마지막에 개행 문자 추가)
     Serial.print(", Brightness:");
     Serial.println(brightness);
 }
 
 void serialReceive() {
+    // 시리얼 버퍼에 데이터가 있으면 처리
     if (Serial.available()) {
+        // 개행 문자('\n')까지 읽어 한 줄의 문자열로 저장
         String command = Serial.readStringUntil('\n');
-        command.trim();
+        command.trim();  // 앞뒤 공백 제거
 
-        // LED 시간 설정
+        // LED 지속 시간 변경 명령 처리:
+        // "RED:" 이후의 문자열을 숫자로 변환하여 redDuration 업데이트
         if (command.startsWith("RED:")) {
             redDuration = command.substring(4).toInt();
             tRed.setInterval(redDuration);
             tRed.enable();
         }
+        // "YELLOW:" 이후의 문자열을 숫자로 변환하여 yellowDuration 업데이트
         if (command.startsWith("YELLOW:")) {
             yellowDuration = command.substring(7).toInt();
             tYellow.setInterval(yellowDuration);
@@ -125,24 +154,30 @@ void serialReceive() {
             tYellow.enable();
             tYellow2.enable();
         }
+        // "GREEN:" 이후의 문자열을 숫자로 변환하여 greenDuration 업데이트
         if (command.startsWith("GREEN:")) {
             greenDuration = command.substring(6).toInt();
             tGreen.setInterval(greenDuration);
             tGreen.enable();
         }
 
-        // BTN1 / BTN2 / BTN3 명령 처리
+        // 버튼 명령 처리: 외부 명령으로 BTN1, BTN2, BTN3 명령이 오면
+        // 해당하는 ISR 함수를 직접 호출하여 모드 전환 등의 기능을 수행
         if (command.startsWith("BTN1")) {
-            switch1_ISR();  // 버튼1 ISR 직접 호출
+            switch1_ISR();
         }
         if (command.startsWith("BTN2")) {
-            switch2_ISR();  // 버튼2 ISR 직접 호출
+            switch2_ISR();
         }
         if (command.startsWith("BTN3")) {
-            switch3_ISR();  // 버튼3 ISR 직접 호출
+            switch3_ISR();
         }
     }
 }
+
+// ───────────────────────────────
+// 이하 LED 제어 및 모드 전환 함수
+// ───────────────────────────────
 
 void taskRed() {
     if (redMode || blinkMode || powerOff) return;
@@ -187,7 +222,6 @@ void blinkGreen() {
     isOn = !isOn;
     analogWrite(green, isOn ? 255 : 0);
     Serial.println(isOn ? "Green Blinking: ON" : "Green Blinking: OFF");
-
     if (tBlinkGreen.isLastIteration()) {
         tFinishGreen.restartDelayed(90);
     }
