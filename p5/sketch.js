@@ -38,8 +38,8 @@ let hands = [];
 let currentGesture = "None";
 
 // 제스처의 연속 동작(디바운스) 처리를 위한 변수들
-let stableGesture = "None";       // 안정된(변화 없는) 제스처
-let gestureStableStart = 0;         // 안정 시작 시간 (millis() 값)
+let stableGesture = "None";       // 변화 없는 제스처
+let gestureStableStart = 0;         // 안정 시작 시간
 let gestureActionDone = false;      // 해당 제스처에 대해 동작을 실행했는지 여부
 let updateInterval = 1000;          // 반복 동작 시 업데이트 간격 (1초)
 let lastTimeVF = 0;                 // 마지막 동작 실행 시간
@@ -70,29 +70,25 @@ function preload() {
 }
 
 
-// =====================================================
-// setup() 함수
-// =====================================================
-// p5.js의 setup() 함수는 프로그램 실행 시 한 번 실행되며,
-// 캔버스 생성, 비디오 설정, 시리얼 포트 초기화, DOM 요소 생성 등을 처리
+
 function setup() {
-  // 800x450 크기의 캔버스를 생성
+  
   createCanvas(800, 450);
 
   // 비디오 캡쳐 생성 (flipped:true로 좌우 반전)
   video = createCapture(VIDEO, { flipped: true });
-  video.size(320, 240);  // 비디오 크기를 320x240으로 설정
-  video.hide();          // 비디오 엘리먼트를 숨김 (캔버스에 직접 그리기 위함)
+  video.size(320, 240);  
+  video.hide();          
 
   // handpose 모델을 이용하여 비디오에서 손 검출 시작
   // gotHands() 함수는 검출 결과가 업데이트될 때마다 호출됨
   handPose.detectStart(video, gotHands);
 
-  // 시리얼 포트 초기화
+
   port = createSerial();
-  // 이미 사용 중인 시리얼 포트 목록을 확인
+
   let usedPorts = usedSerialPorts();
-  // 사용 가능한 포트가 있으면 첫 번째 포트를 열어 9600 보드레이트로 연결
+ 
   if (usedPorts.length > 0) {
     port.open(usedPorts[0], 9600);
   }
@@ -101,7 +97,7 @@ function setup() {
   // 시리얼 연결/해제 버튼 생성
   // =====================================================
   let connectBtn = createButton("Connect Serial");
-  connectBtn.position(20, 20);               // 버튼 위치 지정
+  connectBtn.position(20, 20);              
   connectBtn.mousePressed(connectBtnClick);  // 클릭 시 connectBtnClick() 함수 실행
 
   let disconnectBtn = createButton("Disconnect Serial");
@@ -122,7 +118,7 @@ function setup() {
   // 빨간색 LED 동작 시간 설정
   createP("Red Duration:");
   redSlider = createSlider(500, 5000, redTime);  // 최소 500ms, 최대 5000ms, 초기값 redTime
-  redSlider.mouseReleased(changeSlider);         // 슬라이더 조작 후 마우스 릴리즈 시 changeSlider() 함수 실행
+  redSlider.mouseReleased(changeSlider);         // 슬라이더 조작 후 changeSlider() 함수 실행
   redSpan = createSpan(` ${redTime} ms`);           // 현재 설정된 시간 표시
 
   // 노란색 LED 동작 시간 설정
@@ -142,23 +138,14 @@ function setup() {
 // =====================================================
 // draw() 함수
 // =====================================================
-// p5.js의 draw() 함수는 매 프레임마다 호출되며,
-// 화면 업데이트, 비디오, 아두이노 데이터, 제스처 검출, LED 시각화 등을 처리
 function draw() {
-  // 배경을 회색(220)으로 채움
+
   background(220);
 
-  // -----------------------------------------------------
-  // (1) 비디오 화면 표시
-  // 캔버스 내 350,20 좌표에서 360x280 크기로 비디오 이미지를 그림
   image(video, 350, 20, 360, 280);
 
-  // -----------------------------------------------------
-  // (2) 아두이노로부터 시리얼 데이터 읽어오기
   readSerialData();
 
-  // -----------------------------------------------------
-  // (3) 손 제스처를 분석하여 currentGesture 업데이트
   detectGesture();
 
   // -----------------------------------------------------
@@ -179,8 +166,7 @@ function draw() {
     debounceGesture();
   }
 
-  // -----------------------------------------------------
-  // (5) 현재 상태(모드, LED 상태, 밝기, 제스처)를 화면에 텍스트로 표시
+  
   fill(0);
   noStroke();
   textSize(16);
@@ -189,7 +175,7 @@ function draw() {
   text("Brightness: " + brightness, 20, 150);
   text("Gesture: " + currentGesture, 20, 190);
 
-  // (5-1) 안정된 제스처 상태인 경우 안정된 시간(초) 표시
+
   if (stableGesture !== "None") {
     let elapsedSec = (millis() - gestureStableStart) / 1000;
     text("Gesture Stable: " + nf(elapsedSec, 1, 1) + " sec", 20, 230);
@@ -261,7 +247,6 @@ function drawHandSkeleton() {
     // 현재 손의 keypoints 배열 (각 keypoint에는 x, y 좌표가 있음)
     let kpts = hands[i].keypoints;
     
-    // 손가락을 연결할 선의 스타일 설정 (녹색 선, 굵기 2)
     stroke(0, 255, 0);
     strokeWeight(2);
     noFill();
@@ -276,7 +261,7 @@ function drawHandSkeleton() {
       let ey = end.y;
       line(sx, sy, ex, ey);
     }
-    // 각 keypoint에 대해 작은 원을 그려 점으로 표시 (빨간색, 반지름 6)
+
     fill(255, 0, 0);
     noStroke();
     for (let j = 0; j < kpts.length; j++) {
