@@ -11,15 +11,15 @@
 
 | 손동작 | 이미지 |
 |--------|--------|
-| Shaka   | ![](images/Saka_Sign.png) |
-| OK     | ![](images/OK_Sign.png) |
-| Open   | ![](images/Handopen_Sign.png) |
-| OneUp  | ![](images/OneUp.png) |
-| OneDown | ![](images/OneDown.png) |
-| TwoUp  | ![](images/TwoUp.png) |
-| TwoDown | ![](images/TwoDown.png) |
-| FourUp | ![](images/FourUp.png) |
-| FourDown | ![](images/FourDown.png) |
+| Shaka   | ![](Images/Saka_Sign.png) |
+| OK     | ![](Images/OK_Sign.png) |
+| Open   | ![](Images/Handopen_Sign.png) |
+| OneUp  | ![](Images/OneUp.png) |
+| OneDown | ![](Images/OneDown.png) |
+| TwoUp  | ![](Images/TwoUp.png) |
+| TwoDown | ![](Images/TwoDown.png) |
+| FourUp | ![](Images/FourUp.png) |
+| FourDown | ![](Images/FourDown.png) |
 
 
 #### 기능 설명:
